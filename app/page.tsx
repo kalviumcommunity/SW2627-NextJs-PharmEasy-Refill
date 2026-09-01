@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Frequency = "Daily" | "Weekly" | "Monthly";
 
@@ -12,18 +12,13 @@ type Refill = {
   nextRefillDate: string;
 };
 
+const STORAGE_KEY = "pharmeasy-refills";
+
 export default function Home() {
   const [showForm, setShowForm] = useState(false);
 
-  const [refills, setRefills] = useState<Refill[]>([
-    {
-      id: 1,
-      medicineName: "Paracetamol",
-      quantity: "2 packs",
-      frequency: "Monthly",
-      nextRefillDate: "15 September 2026",
-    },
-  ]);
+  const [refills, setRefills] = useState<Refill[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [medicineName, setMedicineName] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -31,6 +26,34 @@ export default function Home() {
   const [nextRefillDate, setNextRefillDate] = useState("");
 
   const [error, setError] = useState("");
+
+  // Load saved refills when the page opens
+  useEffect(() => {
+    const savedRefills = localStorage.getItem(STORAGE_KEY);
+
+    if (savedRefills) {
+      setRefills(JSON.parse(savedRefills));
+    } else {
+      setRefills([
+        {
+          id: 1,
+          medicineName: "Paracetamol",
+          quantity: "2 packs",
+          frequency: "Monthly",
+          nextRefillDate: "15 September 2026",
+        },
+      ]);
+    }
+
+    setIsLoaded(true);
+  }, []);
+
+  // Save refills whenever they change
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(refills));
+    }
+  }, [refills, isLoaded]);
 
   function handleCreateRefill() {
     setError("");
@@ -65,6 +88,12 @@ export default function Home() {
     setFrequency("Daily");
     setNextRefillDate("");
     setShowForm(false);
+  }
+
+  function handleCancelRefill(id: number) {
+    setRefills((currentRefills) =>
+      currentRefills.filter((refill) => refill.id !== id)
+    );
   }
 
   return (
@@ -121,6 +150,13 @@ export default function Home() {
                   <p className="text-gray-700">
                     Next refill: {refill.nextRefillDate}
                   </p>
+
+                  <button
+                    onClick={() => handleCancelRefill(refill.id)}
+                    className="mt-4 rounded-lg border border-red-500 px-4 py-2 text-red-600 hover:bg-red-50"
+                  >
+                    Cancel Refill
+                  </button>
                 </div>
               ))
             )}
@@ -142,6 +178,7 @@ export default function Home() {
                 <label className="block font-medium text-gray-800">
                   Medicine Name
                 </label>
+
                 <input
                   type="text"
                   placeholder="Enter medicine name"
@@ -155,6 +192,7 @@ export default function Home() {
                 <label className="block font-medium text-gray-800">
                   Quantity
                 </label>
+
                 <input
                   type="text"
                   placeholder="e.g. 2 packs"
@@ -168,9 +206,12 @@ export default function Home() {
                 <label className="block font-medium text-gray-800">
                   Refill Frequency
                 </label>
+
                 <select
                   value={frequency}
-                  onChange={(e) => setFrequency(e.target.value as Frequency)}
+                  onChange={(e) =>
+                    setFrequency(e.target.value as Frequency)
+                  }
                   className="mt-2 w-full rounded-lg border border-gray-300 bg-white p-2 text-gray-900"
                 >
                   <option value="Daily">Daily</option>
@@ -183,6 +224,7 @@ export default function Home() {
                 <label className="block font-medium text-gray-800">
                   Next Refill Date
                 </label>
+
                 <input
                   type="date"
                   value={nextRefillDate}
