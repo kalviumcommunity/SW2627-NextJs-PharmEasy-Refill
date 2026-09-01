@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Frequency = "Daily" | "Weekly" | "Monthly";
 
@@ -12,18 +12,13 @@ type Refill = {
   nextRefillDate: string;
 };
 
+const STORAGE_KEY = "pharmeasy-refills";
+
 export default function Home() {
   const [showForm, setShowForm] = useState(false);
 
-  const [refills, setRefills] = useState<Refill[]>([
-    {
-      id: 1,
-      medicineName: "Paracetamol",
-      quantity: "2 packs",
-      frequency: "Monthly",
-      nextRefillDate: "15 September 2026",
-    },
-  ]);
+  const [refills, setRefills] = useState<Refill[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [medicineName, setMedicineName] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -31,6 +26,34 @@ export default function Home() {
   const [nextRefillDate, setNextRefillDate] = useState("");
 
   const [error, setError] = useState("");
+
+  // Load saved refills when the page opens
+  useEffect(() => {
+    const savedRefills = localStorage.getItem(STORAGE_KEY);
+
+    if (savedRefills) {
+      setRefills(JSON.parse(savedRefills));
+    } else {
+      setRefills([
+        {
+          id: 1,
+          medicineName: "Paracetamol",
+          quantity: "2 packs",
+          frequency: "Monthly",
+          nextRefillDate: "15 September 2026",
+        },
+      ]);
+    }
+
+    setIsLoaded(true);
+  }, []);
+
+  // Save refills whenever they change
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(refills));
+    }
+  }, [refills, isLoaded]);
 
   function handleCreateRefill() {
     setError("");
