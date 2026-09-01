@@ -30,21 +30,35 @@ export default function Home() {
   const [frequency, setFrequency] = useState<Frequency>("Daily");
   const [nextRefillDate, setNextRefillDate] = useState("");
 
+  const [error, setError] = useState("");
+
   function handleCreateRefill() {
-    if (!medicineName || !quantity || !nextRefillDate) {
-      alert("Please fill in all fields.");
+    setError("");
+
+    if (!medicineName.trim()) {
+      setError("Please enter the medicine name.");
+      return;
+    }
+
+    if (!quantity.trim()) {
+      setError("Please enter the quantity.");
+      return;
+    }
+
+    if (!nextRefillDate) {
+      setError("Please select the next refill date.");
       return;
     }
 
     const newRefill: Refill = {
       id: Date.now(),
-      medicineName,
-      quantity,
+      medicineName: medicineName.trim(),
+      quantity: quantity.trim(),
       frequency,
       nextRefillDate,
     };
 
-    setRefills([...refills, newRefill]);
+    setRefills((currentRefills) => [...currentRefills, newRefill]);
 
     setMedicineName("");
     setQuantity("");
@@ -56,7 +70,6 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-100 p-8 text-gray-900">
       <div className="mx-auto max-w-4xl">
-        {/* Page Header */}
         <h1 className="text-4xl font-bold text-blue-600">
           PharmEasy Refill
         </h1>
@@ -65,7 +78,6 @@ export default function Home() {
           Manage your medicine auto-refills easily.
         </p>
 
-        {/* Refill Section */}
         <div className="mt-8 rounded-lg bg-white p-6 shadow">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold text-gray-900">
@@ -73,52 +85,63 @@ export default function Home() {
             </h2>
 
             <button
-              onClick={() => setShowForm(!showForm)}
+              onClick={() => {
+                setShowForm(!showForm);
+                setError("");
+              }}
               className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             >
               {showForm ? "Cancel" : "+ Create New Refill"}
             </button>
           </div>
 
-          {/* Existing Refills */}
           <div className="mt-6 space-y-4">
-            {refills.map((refill) => (
-              <div
-                key={refill.id}
-                className="rounded-lg border border-gray-300 bg-white p-4"
-              >
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {refill.medicineName}
-                </h3>
+            {refills.length === 0 ? (
+              <p className="rounded-lg border border-gray-300 p-4 text-gray-600">
+                No active refills.
+              </p>
+            ) : (
+              refills.map((refill) => (
+                <div
+                  key={refill.id}
+                  className="rounded-lg border border-gray-300 bg-white p-4"
+                >
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {refill.medicineName}
+                  </h3>
 
-                <p className="mt-2 text-gray-700">
-                  Quantity: {refill.quantity}
-                </p>
+                  <p className="mt-2 text-gray-700">
+                    Quantity: {refill.quantity}
+                  </p>
 
-                <p className="text-gray-700">
-                  Frequency: {refill.frequency}
-                </p>
+                  <p className="text-gray-700">
+                    Frequency: {refill.frequency}
+                  </p>
 
-                <p className="text-gray-700">
-                  Next refill: {refill.nextRefillDate}
-                </p>
-              </div>
-            ))}
+                  <p className="text-gray-700">
+                    Next refill: {refill.nextRefillDate}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
 
-          {/* Create Refill Form */}
           {showForm && (
             <div className="mt-6 rounded-lg border border-gray-300 bg-gray-50 p-6 text-gray-900">
               <h2 className="text-xl font-semibold text-gray-900">
                 Create New Refill
               </h2>
 
-              {/* Medicine Name */}
+              {error && (
+                <div className="mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-red-700">
+                  {error}
+                </div>
+              )}
+
               <div className="mt-4">
                 <label className="block font-medium text-gray-800">
                   Medicine Name
                 </label>
-
                 <input
                   type="text"
                   placeholder="Enter medicine name"
@@ -128,12 +151,10 @@ export default function Home() {
                 />
               </div>
 
-              {/* Quantity */}
               <div className="mt-4">
                 <label className="block font-medium text-gray-800">
                   Quantity
                 </label>
-
                 <input
                   type="text"
                   placeholder="e.g. 2 packs"
@@ -143,17 +164,13 @@ export default function Home() {
                 />
               </div>
 
-              {/* Frequency */}
               <div className="mt-4">
                 <label className="block font-medium text-gray-800">
                   Refill Frequency
                 </label>
-
                 <select
                   value={frequency}
-                  onChange={(e) =>
-                    setFrequency(e.target.value as Frequency)
-                  }
+                  onChange={(e) => setFrequency(e.target.value as Frequency)}
                   className="mt-2 w-full rounded-lg border border-gray-300 bg-white p-2 text-gray-900"
                 >
                   <option value="Daily">Daily</option>
@@ -162,12 +179,10 @@ export default function Home() {
                 </select>
               </div>
 
-              {/* Next Refill Date */}
               <div className="mt-4">
                 <label className="block font-medium text-gray-800">
                   Next Refill Date
                 </label>
-
                 <input
                   type="date"
                   value={nextRefillDate}
@@ -176,7 +191,6 @@ export default function Home() {
                 />
               </div>
 
-              {/* Create Button */}
               <button
                 onClick={handleCreateRefill}
                 className="mt-6 rounded-lg bg-green-600 px-5 py-2 font-medium text-white hover:bg-green-700"
