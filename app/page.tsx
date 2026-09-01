@@ -67,6 +67,12 @@ export default function Home() {
     setShowForm(false);
   }
 
+  function handleCancelRefill(id: number) {
+    setRefills((currentRefills) =>
+      currentRefills.filter((refill) => refill.id !== id)
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gray-100 p-8 text-gray-900">
       <div className="mx-auto max-w-4xl">
@@ -121,6 +127,13 @@ export default function Home() {
                   <p className="text-gray-700">
                     Next refill: {refill.nextRefillDate}
                   </p>
+
+                  <button
+                    onClick={() => handleCancelRefill(refill.id)}
+                    className="mt-4 rounded-lg border border-red-500 px-4 py-2 text-red-600 hover:bg-red-50"
+                  >
+                    Cancel Refill
+                  </button>
                 </div>
               ))
             )}
@@ -142,6 +155,7 @@ export default function Home() {
                 <label className="block font-medium text-gray-800">
                   Medicine Name
                 </label>
+
                 <input
                   type="text"
                   placeholder="Enter medicine name"
@@ -155,6 +169,7 @@ export default function Home() {
                 <label className="block font-medium text-gray-800">
                   Quantity
                 </label>
+
                 <input
                   type="text"
                   placeholder="e.g. 2 packs"
@@ -168,9 +183,12 @@ export default function Home() {
                 <label className="block font-medium text-gray-800">
                   Refill Frequency
                 </label>
+
                 <select
                   value={frequency}
-                  onChange={(e) => setFrequency(e.target.value as Frequency)}
+                  onChange={(e) =>
+                    setFrequency(e.target.value as Frequency)
+                  }
                   className="mt-2 w-full rounded-lg border border-gray-300 bg-white p-2 text-gray-900"
                 >
                   <option value="Daily">Daily</option>
@@ -183,6 +201,7 @@ export default function Home() {
                 <label className="block font-medium text-gray-800">
                   Next Refill Date
                 </label>
+
                 <input
                   type="date"
                   value={nextRefillDate}
